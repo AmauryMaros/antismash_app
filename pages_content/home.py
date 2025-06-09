@@ -11,9 +11,12 @@ st.markdown("""
 
 def page():
     st.title("Biosynthetic Gene Clusters in the vaginal microbiome")
-    
+
+    st.header("1. Run antiSMASH")
+
     st.markdown("""
     <div class="justified-text">
+
     AntiSMASH is a bioinformatics tool used to identify and analyze biosynthetic gene clusters (BGCs) in bacterial and fungal genomes. 
                 
     These clusters are groups of genes that work together to produce secondary metabolites, which are compounds not directly involved in growth or reproduction but often serve important ecological functions, such as antibiotics or pigments.
@@ -22,17 +25,7 @@ def page():
     </div>
     """, unsafe_allow_html=True)
 
-    st.subheader("Workflow", divider='grey')
-
-    st.markdown("""
-    <div class="justified-text">
-    
-    1. **Input**: Typically, the input is a genome sequence in FASTA format or a GenBank file.
-    
-    2. **Running AntiSMASH**: AntiSMASH can be run locally or via antiSMASH web version.
-    
-    </div>
-    """, unsafe_allow_html=True)
+    st.header("Workflow", divider='grey')
 
     # Display the SLURM script code block
     st.code("""
