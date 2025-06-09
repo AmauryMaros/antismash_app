@@ -39,8 +39,8 @@ def page():
     #!/bin/bash
 
     #SBATCH --job-name=antismash
-    #SBATCH --output=/local/scratch/amaros/antismash/01_run_antiSMASH/logs/%x_%A_%a.out
-    #SBATCH --error=/local/scratch/amaros/antismash/01_run_antiSMASH/logs/%x_%A_%a.err
+    #SBATCH --output=path_to_antismash/01_run_antiSMASH/logs/%x_%A_%a.out
+    #SBATCH --error=path_to_antismash/01_run_antiSMASH/logs/%x_%A_%a.err
     #SBATCH --array=1-1500
     #SBATCH --mem-per-cpu=40G
     #SBATCH --cpus-per-task=4
@@ -50,15 +50,15 @@ def page():
     conda activate /usr/local/packages/miniconda3/envs/antismash
 
     # Go to working directory
-    cd /local/scratch/amaros/antismash/01_run_antiSMASH/
+    cd path_to_antismash/01_run_antiSMASH/
 
     infile=$(sed -n "${SLURM_ARRAY_TASK_ID}p" MAGs_list/mag_0001_1500.txt)
 
     # Run AntiSMASH
     /usr/local/packages/miniconda3/envs/antismash/bin/antismash \\
         --cpus 4 \\
-        /local/projects-t3/LSVF/VIRGO2/final_bins/${infile}.fasta \\
-        --output-dir /local/scratch/amaros/antismash/results_antismash/${infile}/ \\
+        path_to_MAGS/${infile}.fasta \\
+        --output-dir path_to_antismash/results_antismash/${infile}/ \\
         --genefinding-tool prodigal \\
         --cb-general --cb-subclusters --cb-knownclusters --fullhmmer \\
         --clusterhmmer --tigrfam --asf --cc-mibig --pfam2go --rre --smcog-trees
@@ -71,44 +71,8 @@ def page():
     </div>
     """, unsafe_allow_html=True)
 
-    st.code("""
-[amaros@ravellab 02_pipeline]$ ll
-total 248
--rwxr-xr-x. 1 amaros igs  2732 Nov 25 23:11 01_process_antismash_output.py
--rwxr-xr-x. 1 amaros igs  1602 Nov 25 23:11 02_process_antismash_json.py
--rwxr-xr-x. 1 amaros igs  2162 Nov 26 11:28 03_get_ctg_coordinates.py
--rwxr-xr-x. 1 amaros igs  2108 Nov 26 11:50 04_get_ctg_sequences.py
--rwxr-xr-x. 1 amaros igs   875 Nov 26 11:43 05_blast_ctg.py
--rwxr-xr-x. 1 amaros igs   304 Nov 26 11:43 blast_ctg.sh
--rwxr-xr-x. 1 amaros igs 19800 Nov 25 23:11 functions.py
--rwxr-xr-x. 1 amaros igs   808 Nov 25 23:11 get_json_status.py
--rwxr-xr-x. 1 amaros igs   597 Nov 25 23:11 parse_jsons.sh
-drwxr-xr-x. 2 amaros igs    85 Nov 25 23:11 __pycache__
-    """, language="bash")
-
 
     st.subheader("antiSMASH documentation", divider='grey')
     st.markdown("<a href='https://docs.antismash.secondarymetabolites.org/' target='_blank'>antiSMASH documentation website</a>",unsafe_allow_html=True)
     st.markdown("<a href='https://docs.antismash.secondarymetabolites.org/glossary/' target='_blank'>antiSMASH Glossary</a>",unsafe_allow_html=True)
     st.markdown("<a href='https://antismash-db.secondarymetabolites.org/' target='_blank'>antiSMASH database</a>",unsafe_allow_html=True)
-
-
-
-
-
-
-# # Run the page function
-# page()
-
-
-    # #### Key Features and Capabilities
-
-    # 1. **Biosynthetic Gene Cluster Detection**: AntiSMASH detects BGCs by identifying and annotating genes known to be associated with secondary metabolite synthesis pathways. This includes pathways for polyketides, nonribosomal peptides, terpenes, and more.
-
-    # 2. **Annotation and Classification**: After detecting BGCs, AntiSMASH classifies them based on type and annotates functional genes, providing users with insights into potential chemical products and biosynthetic capabilities.
-
-    # 3. **Comparative Analysis**: AntiSMASH can compare BGCs across multiple genomes, helping researchers understand evolutionary relationships and predict possible new compounds.
-
-    # 4. **Genome Mining**: AntiSMASH integrates with databases like MIBiG (Minimum Information about a Biosynthetic Gene Cluster) to provide data on known BGCs, allowing researchers to identify similar or novel clusters that may produce uncharacterized compounds.
-
-    # 5. **Output**: AntiSMASH provides both JSON and visual outputs, allowing users to view cluster locations, gene annotations, and predicted products in a user-friendly format. The output can be processed for downstream analyses or visualized as gene cluster diagrams.
