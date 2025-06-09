@@ -6,16 +6,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# # Load data
-# virgo2_inventory = pd.read_csv("data/MAG_inventory_VIRGO2_021623_30Jul2024.txt.gz", sep="\t")
-# region_summary_original = pd.read_csv("data/region_summary.csv")
-# sequence_length = pd.read_csv("data/sequence_lengths.txt.gz", sep="\t", header=None)
-
 # Caching the data loading functions to speed up the Streamlit app
 @st.cache_data
 def load_data():
     # Load data
-    virgo2_inventory = pd.read_csv("data/MAG_inventory_VIRGO2_021623_30Jul2024.txt.gz", sep="\t")
+    virgo2_inventory = pd.read_csv("data/MAG_inventory_VIRGO2_021623_30Jul2024.txt.gz", sep="\t", index_col=0)
     region_summary_original = pd.read_csv("data/region_summary.csv")
     sequence_length = pd.read_csv("data/sequence_lengths.txt.gz", sep="\t", header=None)
     
@@ -64,7 +59,7 @@ def display_antismash_status_pie(antismash_status):
         values='count', 
         names='status', 
         color='status',
-        title='Proportion of antiSMASH results (MAG)',
+        title='Proportion of BGC identification (MAG)',
         color_discrete_map=color_map
     )
     st.plotly_chart(fig)
@@ -110,9 +105,9 @@ def plot_mean_sequence_length(mean_length_data):
         )
 
     fig.update_layout(
-        title="Mean Sequence Length per MAG",
+        title="Mean Contig Length per MAG",
         height=500, width=600,
-        xaxis_title="Sequence Length",
+        xaxis_title="Contig Length",
         yaxis_title="Frequency",
         barmode='overlay',
         xaxis=dict(range=[-20000, 1000000]),
@@ -138,9 +133,9 @@ def plot_number_of_sequences(count_length_data):
         )
 
     fig.update_layout(
-        title="Number of Sequences per MAG",
+        title="Number of contigs per MAG",
         height=500, width=600,
-        xaxis_title="Number of Sequences",
+        xaxis_title="Number of contigs",
         yaxis_title="Frequency",
         barmode='overlay',
         xaxis=dict(range=[-1000, 10000]),
@@ -161,7 +156,7 @@ def display_taxa_processed(taxa_filter=None):
         x='count', 
         y='FinalTaxonomy', 
         color='status', 
-        title="Stacked Bar Plot of Status Counts by Final Taxonomy (Sorted by Total Count)", 
+        title="", 
         labels={"FinalTaxonomy": "Final Taxonomy", "count": "Count", "status": "Status"}, 
         height=1000,
         text_auto=True,
@@ -178,14 +173,15 @@ def display_taxa_processed(taxa_filter=None):
 
 # Streamlit page function
 def page():
-    st.title("Data Quality")
+    st.title("BGC identification")
 
     st.subheader("VIRGO2 inventory", divider='grey')
     st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
 
-    st.subheader("Proportion of antiSMASH results", divider='grey')
+    # st.subheader("Proportion of BGC identification - all MAGs", divider='grey')
     col1, col2 = st.columns(2)
     with col1:
+        st.subheader("Proportion of BGC identification - all MAGs", divider='grey')
         # Plot on the top
         display_antismash_status_pie(antismash_status)
 
@@ -200,7 +196,8 @@ def page():
         st.plotly_chart(fig)
 
     with col2:
-        taxa_filter = st.text_input("Grep...")
+        st.subheader("Proportion of BGC identification - per specie", divider='grey')
+        taxa_filter = st.text_input(label="", placeholder="Grep a taxa, ex: Lactobacillus, Lactobacillus_iners")
         display_taxa_processed(taxa_filter)
 
     zero_only = []
@@ -214,27 +211,11 @@ def page():
             else :
                 zero_only.append(i)
 
-    # col1, col2 = st.columns(2)
-    # with col1:
-    #     st.subheader("No results at all", divider='grey')
-    #     df_zero_only = virgo2_inventory[virgo2_inventory['FinalTaxonomy'].isin(zero_only)]['FinalTaxonomy'].value_counts().reset_index().sort_values("FinalTaxonomy")
-    #     # st.dataframe(pd.DataFrame(sorted(zero_only)))
-    #     st.dataframe(df_zero_only.reset_index(drop=True))
-
-    # with col2:
-    #     st.subheader(f"100% of results", divider='grey')
-    #     df_one_only = virgo2_inventory[virgo2_inventory['FinalTaxonomy'].isin(one_only)]['FinalTaxonomy'].value_counts().reset_index().sort_values("FinalTaxonomy")
-    #     st.dataframe(df_one_only.reset_index(drop=True))
-    
-    # # with col3:
-    #     st.subheader("All taxa", divider='grey')
-    #     st.dataframe(status_counts_long.sort_values(by="FinalTaxonomy",ascending=True).reset_index(drop=True))
-
-    st.subheader("Boxplot of numerical metadata", divider='grey')
-    st.dataframe(pd.DataFrame(virgo2_inventory.isna().sum()[virgo2_inventory.isna().sum() != 0], columns=['NaN']).transpose())
+    st.subheader("MAGs sequencing metrics", divider='grey')
+    # st.dataframe(pd.DataFrame(virgo2_inventory.isna().sum()[virgo2_inventory.isna().sum() != 0], columns=['NaN']).transpose())
     display_numerical_feature_comparison(virgo2_inventory, antismash_status)
 
-    st.subheader("Distribution of sequences lengths", divider='grey')
+    st.subheader("Distribution of contigs lengths", divider='grey')
     mean_length_data = sequences_data[['length', 'MAG']].groupby("MAG").mean().reset_index().merge(antismash_status, on="MAG")
     count_length_data = sequences_data[['length', 'MAG']].groupby("MAG").count().reset_index().merge(antismash_status, on="MAG")
     col1, col2 = st.columns(2)
