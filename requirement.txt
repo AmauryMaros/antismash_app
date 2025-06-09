@@ -1,8 +1,0 @@
-streamlit
-pandas
-numpy
-plotly
-plotly_express
-ast
-random
-streamlit-pdf-viewer
