@@ -12,7 +12,7 @@ st.markdown("""
 def page():
     st.title("Biosynthetic Gene Clusters in the vaginal microbiome")
 
-    st.header("1. Run antiSMASH")
+    st.header("Run antiSMASH")
 
     st.markdown("""
     <div class="justified-text">
@@ -25,7 +25,7 @@ def page():
     </div>
     """, unsafe_allow_html=True)
 
-    st.header("Workflow", divider='grey')
+    st.subheader("Workflow", divider='grey')
 
     # Display the SLURM script code block
     st.code("""
