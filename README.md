@@ -1,5 +1,5 @@
-# BGC in vaginal microbiome
+# Biosynthetic Gene Clusters in the vaginal microbiome
 
-Look at the results here:
+Application available here:
 
 https://antismash-app.streamlit.app/
