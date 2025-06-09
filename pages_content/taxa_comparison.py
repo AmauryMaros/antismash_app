@@ -14,7 +14,7 @@ import math
 def load_data():
     # Load data
     region_summary = pd.read_csv("data/region_summary.csv")
-    virgo2_inventory = pd.read_csv('data/MAG_inventory_VIRGO2_021623_30Jul2024.txt', sep='\t')
+    virgo2_inventory = pd.read_csv('data/MAG_inventory_VIRGO2_021623_30Jul2024.txt.gz', sep='\t')
     cluster_blast = pd.read_csv('data/cluster_blast.csv.gz')
     taxa_colors = pd.read_csv('data/VIRGO2_taxaKey.csv')
     return region_summary, virgo2_inventory, cluster_blast, taxa_colors
