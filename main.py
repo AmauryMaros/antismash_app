@@ -10,6 +10,9 @@ from pages_content import home, quality, taxa_comparison
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Content", ["Home", "Quality", "Taxa comparison"], index=0, label_visibility='hidden')
 
+st.sidebar.subheader("Contact")
+st.sidebar.write("jholm@som.umaryland.edu")
+
 # Display the selected page
 if page == "Home":
     home.page()
