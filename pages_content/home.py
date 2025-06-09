@@ -17,7 +17,7 @@ def page():
     st.markdown("""
     <div class="justified-text">
 
-    AntiSMASH is a bioinformatics tool used to identify and analyze biosynthetic gene clusters (BGCs) in bacterial and fungal genomes. 
+    [*antiSMASH*](https://doi.org/10.1093/nar/gkad344) is a bioinformatics tool used to identify and analyze biosynthetic gene clusters (BGCs) in bacterial and fungal genomes. 
                 
     These clusters are groups of genes that work together to produce secondary metabolites, which are compounds not directly involved in growth or reproduction but often serve important ecological functions, such as antibiotics or pigments.
 
