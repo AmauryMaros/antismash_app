@@ -10,8 +10,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def page():
-    st.title("Biosynthetic Gene Clusters in the vaginal microbiome", divider='grey')
-    
+    st.title("Biosynthetic Gene Clusters in the vaginal microbiome")
+
+    st.divider()
+
     st.markdown("""
     <div class="justified-text">
 
