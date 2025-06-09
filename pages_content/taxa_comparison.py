@@ -99,7 +99,8 @@ def display_barplot_bgc_taxonomic_level(annotation_column, top_value, threshold_
     # Update layout
     fig.update_layout(
         barmode="stack",
-        title=f"{annotation_column} - Top {top_value}",
+        # title=f"{annotation_column} - Top {top_value}",
+        title="",
         xaxis_title="Count",
         yaxis_title="Genus",
         template="plotly_white",
@@ -391,17 +392,18 @@ virgo2_family_genus['Genus'] = virgo2_family_genus['classification'].apply(lambd
 
 def page():
 
-    st.header("Table")
+    st.header("Region overview", divider="grey")
     st.dataframe(region_overview)
 
-    st.header("BGC detection", divider = 'grey')
-    feature_for_barplot = st.selectbox("Choose a feature", ("type", "most_similar_known_cluster_type", "most_similar_known_cluster"), key='taxonomic_level')
+    st.header("Genera comparison", divider = 'grey')
+    feature_for_barplot = st.selectbox("Select a feature", ("type", "most_similar_known_cluster_type", "most_similar_known_cluster"), key='taxonomic_level')
+    st.info("3 features are available: 'type' is the BGC type regarding the antiSMASH reference database, while 'most_similar_known_cluster_type' and 'most_similar_known_cluster' are the BGC type and the associated compound regarding the MiBIG reference database", icon="ℹ️")
     # threshold_similarity = st.number_input("Threshold (cluster_blast similarity, %) ", min_value=0, max_value=100, value=0)
     col1, col2 = st.columns([4,1])
     with col1:
         display_barplot_bgc_taxonomic_level(feature_for_barplot, 15, threshold_similarity=0)
     with col2:
-        st.subheader("Genus in VIRGO2")
+        st.subheader("Genera representation in VIRGO2")
         st.dataframe(virgo2_family_genus['Genus'].value_counts().reset_index())
     
     # st.header("MIBiG similarity score", divider = 'grey')
@@ -409,8 +411,8 @@ def page():
     # scatter_w_barplot(feature_w_taxa)
 
     st.header("Species comparison", divider = 'grey')
-    species = st.text_input("Grep...:")
     feature_for_species_barplot = st.radio("Choose a feature", ["type", "most_similar_known_cluster_type", "most_similar_known_cluster"], key='feature_for_species_barplot', index=0, horizontal=True)
+    species = st.text_input(label="taxa", placeholder="Grep a taxa, ex: Lactobacillus, Lactobacillus_iners, Lactobacillus|Prevotella", label_visibility="hidden")
     all_taxa_table = get_all_taxa_region_table(species, feature_for_species_barplot)
     display_barplot_per_species(all_taxa_table)
 
