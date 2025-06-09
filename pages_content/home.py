@@ -60,7 +60,7 @@ def page():
     st.markdown("""
     <div class="justified-text">
                 
-    3. **Post-processing**: AntiSMASH outputs can be processed with custom scripts to extract JSON data for further analysis.
+    **Post-processing**: AntiSMASH outputs can be processed with custom scripts to extract JSON data for further analysis, see LINK.
     </div>
     """, unsafe_allow_html=True)
 
