@@ -9,8 +9,9 @@ from pages_content import home, quality, taxa_comparison
 # Set up sidebar navigation with "Home" as the default page
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Content", ["Home", "Quality", "Taxa comparison"], index=0, label_visibility='hidden')
-
+st.sidebar.divider()
 st.sidebar.subheader("Contact")
+st.sidebar.markdown("""[J B Holm Lab website](https://www.jbholmlab.org)""")
 st.sidebar.write("jholm@som.umaryland.edu")
 
 # Display the selected page
