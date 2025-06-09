@@ -15,7 +15,7 @@ from plotly.subplots import make_subplots
 @st.cache_data
 def load_data():
     # Load data
-    virgo2_inventory = pd.read_csv("data/MAG_inventory_VIRGO2_021623_30Jul2024.txt", sep="\t")
+    virgo2_inventory = pd.read_csv("data/MAG_inventory_VIRGO2_021623_30Jul2024.txt.gz", sep="\t")
     region_summary_original = pd.read_csv("data/region_summary.csv")
     sequence_length = pd.read_csv("data/sequence_lengths.txt.gz", sep="\t", header=None)
     
