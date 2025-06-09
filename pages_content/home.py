@@ -21,6 +21,8 @@ def page():
                 
     These clusters are groups of genes that work together to produce secondary metabolites, which are compounds not directly involved in growth or reproduction but often serve important ecological functions, such as antibiotics or pigments.
 
+    This tool has been used to study the diversity of the BGC in the vaginal metagenome assembled genomes (MAGs). See [VIRGO2](https://www.biorxiv.org/content/10.1101/2025.03.04.641479v1)
+
 
     </div>
     """, unsafe_allow_html=True)
@@ -60,7 +62,7 @@ def page():
     st.markdown("""
     <div class="justified-text">
                 
-    **Post-processing**: AntiSMASH outputs can be processed with custom scripts to extract JSON data for further analysis, see LINK.
+    **Post-processing**: AntiSMASH outputs can be processed with custom scripts to extract JSON data for further analysis, see [02_pipeline](https://github.com/AmauryMaros/BGC_antiSMASH).
     </div>
     """, unsafe_allow_html=True)
 
