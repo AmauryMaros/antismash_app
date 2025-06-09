@@ -21,7 +21,7 @@ def page():
                 
     These clusters are groups of genes that work together to produce secondary metabolites, which are compounds not directly involved in growth or reproduction but often serve important ecological functions, such as antibiotics or pigments.
 
-    This tool has been used to study the diversity of the BGC in the vaginal metagenome assembled genomes (MAGs). See [VIRGO2](https://www.biorxiv.org/content/10.1101/2025.03.04.641479v1)
+    This tool has been used to study the diversity of the BGC in the vaginal metagenome assembled genomes (MAGs). See [VIRGO2](https://www.biorxiv.org/content/10.1101/2025.03.04.641479v1) from *M. T. France et al.*
 
 
     </div>
