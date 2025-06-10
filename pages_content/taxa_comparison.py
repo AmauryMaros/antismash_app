@@ -58,7 +58,6 @@ color_mapping_clustertype = {cluster: custom_colors[i % len(custom_colors)] for 
 unique_cluster_compound = region_overview['most_similar_known_cluster'].unique()
 color_mapping_compound = {cluster: custom_colors[i % len(custom_colors)] for i, cluster in enumerate(unique_cluster_compound)}
 
-
 def display_barplot_bgc_taxonomic_level(annotation_column, top_value, threshold_similarity):
     # Function to generate grouped and sorted data
     def prepare_data(feature, top_value):
@@ -361,18 +360,6 @@ def scatter_w_barplot(column_label):
         row=1, col=1
     )
 
-    fig.update_yaxes(
-        title_text="Similarity (%)",
-        showline=True,
-        linecolor="black",
-        showgrid=True,
-        gridcolor="lightgray",
-        ticks="outside",
-        tickcolor="black",
-        tickwidth=2,
-        range=[-5, 105],
-        row=1, col=2
-    )
     fig.update_layout(
         barmode='stack',
         width=2000,
@@ -384,11 +371,9 @@ def scatter_w_barplot(column_label):
     # Show the plot
     st.plotly_chart(fig, use_container_width=True)
 
-
 virgo2_family_genus = virgo2_inventory[['classification','FinalTaxonomy']].copy()
 virgo2_family_genus['Family'] = virgo2_family_genus['classification'].apply(lambda x : x.split(";")[4][3:])
 virgo2_family_genus['Genus'] = virgo2_family_genus['classification'].apply(lambda x : x.split(";")[5][3:])
-
 
 def page():
 
