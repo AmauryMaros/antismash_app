@@ -4,11 +4,11 @@ import pandas as pd
 
 st.set_page_config(layout='wide')
 
-from pages_content import home, quality, taxa_comparison
+from pages_content import home, quality, gcf
 
 # Set up sidebar navigation with "Home" as the default page
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Content", ["Home", "BGC identification", "Taxonomic comparison"], index=0, label_visibility='hidden')
+page = st.sidebar.radio("Content", ["Home", "BGC identification", "GCF"], index=0, label_visibility='hidden')
 st.sidebar.divider()
 st.sidebar.subheader("Contact")
 st.sidebar.markdown("""[J B Holm Lab website](https://www.jbholmlab.org)""")
@@ -19,5 +19,5 @@ if page == "Home":
     home.page()
 elif page == "BGC identification":
     quality.page()
-elif page == "Taxonomic comparison":
-    taxa_comparison.page()  
+elif page == "GCF":
+    gcf.page()  
