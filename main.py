@@ -4,7 +4,7 @@ import pandas as pd
 
 st.set_page_config(layout='wide')
 
-from pages_content import home, quality2, gcf
+from pages_content import home, quality, gcf
 
 # Set up sidebar navigation with "Home" as the default page
 st.sidebar.title("Navigation")
@@ -18,6 +18,6 @@ st.sidebar.write("jholm@som.umaryland.edu")
 if page == "Home":
     home.page()
 elif page == "BGC identification":
-    quality2.page()
+    quality.page()
 elif page == "GCF":
     gcf.page()  
