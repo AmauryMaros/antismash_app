@@ -23,6 +23,7 @@ def page():
 
     This tool has been used to study the diversity of the BGC in the vaginal metagenome assembled genomes (MAGs). See [VIRGO2](https://www.biorxiv.org/content/10.1101/2025.03.04.641479v1) from *M. T. France et al.*
 
+    BGCs are furthermore analyzed with [BiG-SCAPE](https://github.com/medema-group/BiG-SCAPE) and grouped into Gene Cluster Families (GCFs) using sequence similarity networks.
 
     </div>
     """, unsafe_allow_html=True)

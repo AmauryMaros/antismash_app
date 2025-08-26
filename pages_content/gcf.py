@@ -47,7 +47,7 @@ with open(f"data/accumulation_models.json", "r") as f:
 
 def page():
 
-    st.title("Gene Cluster Family")
+    st.title("Gene Cluster Families")
 
     # ----- Merge full metadata into BGC_table
     merged = BGC_table.merge(virgo2_metadata[["MAG", "FinalTaxonomy"]])
@@ -138,7 +138,7 @@ def page():
 
 
     st.subheader("Taxa", divider='grey')
-    taxa_selection = st.selectbox("Taxa selection", sorted(accumulation_models.keys()))
+    taxa_selection = st.selectbox("Taxa selection", sorted(accumulation_models.keys()),index=sorted(accumulation_models.keys()).index("Lactobacillus_crispatus"))
 
     col1, col2 = st.columns(spec=[0.3,0.7])
 
@@ -217,8 +217,8 @@ def page():
         color_mapping_type_filtered = {k: v for k, v in color_mapping_type.items() if k in norm_pivot.columns}
         class_colors = {k: rgb_to_hex(v) if 'rgb' in v else v for k, v in color_mapping_type_filtered.items()}
 
-        # Ensure "mix" is included
-        class_colors["mix"] = "#8c8c8c"
+        if "mix" in df_to_plot["Class"].unique():
+            class_colors["mix"] = "#8c8c8c"
 
         # Build Altair color scale
         color_scale = alt.Scale(domain=list(class_colors.keys()), range=list(class_colors.values()))

@@ -160,7 +160,7 @@ def display_taxa_processed(taxa_filter=None):
 
 # Streamlit page function
 def page():
-    st.title("BGC identification")
+    st.title("Biosynthetic Gene Clusters")
 
     # st.subheader("Proportion of BGC identification - all MAGs", divider='grey')
     col1, col2 = st.columns(2)
@@ -176,7 +176,7 @@ def page():
 
     st.subheader("BGC identification - per species", divider='grey')
     # Plot on the botton
-    taxa_selection = st.selectbox("Taxa selection", sorted(stack_antismash_status['FinalTaxonomy'].unique()))
+    taxa_selection = st.selectbox("Taxa selection", sorted(stack_antismash_status['FinalTaxonomy'].unique()), index=sorted(stack_antismash_status['FinalTaxonomy'].unique()).index("Lactobacillus_crispatus"))
     
     col1, col2, col3 = st.columns(3)
     with col1:
