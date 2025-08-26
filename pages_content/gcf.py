@@ -10,13 +10,13 @@ from plotly.subplots import make_subplots
 def load_data():
     # Load data
     virgo2_metadata = pd.read_csv("data/03_virgo2_metadata.csv")
-    # region_summary_original = pd.read_csv("data/04_regions.csv")    
+    regions = pd.read_csv("data/04_regions.csv")    
     virgo2_taxakey = pd.read_csv("data/06_VIRGO2_taxaKey.csv")
     # COVERAGE = pd.read_csv("data/coverage.csv")
     BGC_table = pd.read_csv(f"data/01_BGC_table.csv")
-    return virgo2_metadata, BGC_table, virgo2_taxakey
+    return virgo2_metadata, BGC_table, virgo2_taxakey, regions
 
-virgo2_metadata, BGC_table, virgo2_taxakey = load_data()
+virgo2_metadata, BGC_table, virgo2_taxakey, regions = load_data()
 
 
 def rgb_to_hex(rgb_string):
@@ -35,6 +35,10 @@ def rgb_to_hex(rgb_string):
 with open(f"data/color_mapping_type.json", "r") as f:
     color_mapping_type = json.load(f) 
 color_mapping_type["lanthipeptide-class-iv"] = "magenta"
+
+
+with open(f"data/accumulation_models.json", "r") as f:
+    accumulation_models = json.load(f) 
 
 def page():
 
@@ -126,3 +130,19 @@ def page():
     fig.update_xaxes(tickangle=-45)
 
     st.plotly_chart(fig, use_container_width=True)
+
+
+    st.subheader("Taxa", divider='grey')
+    taxa_selection = st.selectbox("Taxa selection", sorted(accumulation_models.keys()))
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        curve_df = pd.DataFrame(accumulation_models[taxa_selection])
+        curve_df["Taxa"] = taxa_selection
+        palette_tax = [taxa_color.get(taxon, "#8c8c8c") for taxon in [taxa_selection]]
+        fig = px.line(curve_df, x="Sites", y="Richness", color="Taxa", color_discrete_sequence = palette_tax)
+        fig.update_layout(xaxis_title = "Number of MAGs", yaxis_title="Accumulated unique GCF")
+        st.plotly_chart(fig, use_container_width=True)    
+    
+    # plt.text(x=curve_df["Sites"].max(), y=curve_df["Richness"].max(), s=taxa)
