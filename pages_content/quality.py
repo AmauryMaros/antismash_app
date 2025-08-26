@@ -12,10 +12,19 @@ def load_data():
     # Load data
     virgo2_inventory = pd.read_csv("data/03_virgo2_metadata.csv")
     region_summary_original = pd.read_csv("data/04_regions.csv")    
-    return virgo2_inventory, region_summary_original
+    virgo2_taxakey = pd.read_csv("data/06_VIRGO2_taxaKey.csv")
+    COVERAGE = pd.read_csv("data/coverage.csv")
+
+    return virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE
 
 # Load the data using the cached function
-virgo2_inventory, region_summary_original = load_data()
+virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE = load_data()
+
+zero_color = "#708090"
+positive_color = "#90EE90"
+
+color_map = {1: positive_color, 0: zero_color}
+taxa_color = virgo2_taxakey.set_index("Taxa")["Color"].to_dict()
 
 # Data processing
 region_df = region_summary_original.copy()
@@ -40,7 +49,7 @@ status_counts_long = status_counts.reset_index().melt(id_vars='FinalTaxonomy', v
 def display_antismash_status_pie(antismash_status):
     status_counts = antismash_status['status'].value_counts().reset_index()
     status_counts.columns = ['status', 'count']
-    color_map = {1: "blue", 0: "red"}
+    color_map = {1: positive_color, 0: zero_color}
     status_counts['color'] = status_counts['status'].map(color_map)
     
     fig = px.pie(
@@ -62,7 +71,6 @@ def display_numerical_feature_comparison(mag_inventory, antismash_status):
     fig = make_subplots(rows=n_rows, cols=n_cols, subplot_titles=numerical_columns)
 
     merged_data = mag_inventory.merge(antismash_status, on="MAG", how="left")
-    color_map = {0: "red", 1: "blue"}
 
     for i, col in enumerate(numerical_columns):
         row, col_pos = divmod(i, n_cols)
@@ -79,7 +87,6 @@ def display_numerical_feature_comparison(mag_inventory, antismash_status):
 
 def plot_mean_sequence_length(mean_length_data):
 
-    color_map = {1: "blue", 0: "red"}
     fig = go.Figure()
 
     for status in mean_length_data['status'].unique():
@@ -106,7 +113,6 @@ def plot_mean_sequence_length(mean_length_data):
 
 def plot_number_of_sequences(count_length_data):
 
-    color_map = {1: "blue", 0: "red"}
     fig = go.Figure()
 
     for status in count_length_data['status'].unique():
@@ -149,21 +155,12 @@ def display_taxa_processed(taxa_filter=None):
         text_auto=True,
         color_discrete_map=color_map
     )
-    # fig.update_layout(
-    #     xaxis_title="Final Taxonomy", yaxis_title="Count", xaxis_tickangle=45, barmode='stack',
-    #     legend_title="Status", template="plotly_dark",
-        
-    # )
-    # fig.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
 
     st.plotly_chart(fig)
 
 # Streamlit page function
 def page():
     st.title("BGC identification")
-
-    st.subheader("VIRGO2 inventory", divider='grey')
-    st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
 
     # st.subheader("Proportion of BGC identification - all MAGs", divider='grey')
     col1, col2 = st.columns(2)
@@ -173,30 +170,79 @@ def page():
         display_antismash_status_pie(antismash_status)
 
     with col2:
-        st.subheader("BGC identification - per species", divider='grey')
-        # Plot on the botton
-        taxa_selection = st.selectbox("Taxa selection", sorted(stack_antismash_status['FinalTaxonomy'].unique()))
+
+        st.subheader("VIRGO2 inventory", divider='grey')
+        st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
+
+    st.subheader("BGC identification - per species", divider='grey')
+    # Plot on the botton
+    taxa_selection = st.selectbox("Taxa selection", sorted(stack_antismash_status['FinalTaxonomy'].unique()))
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
         filtered_data = stack_antismash_status[stack_antismash_status['FinalTaxonomy'] == taxa_selection]
         status_counts = filtered_data.groupby('status').size().reset_index(name='count')
-        color_map = {1: "blue", 0: "red"}
-        status_counts['color'] = status_counts['status'].map(color_map)
+        status_counts["status"] = status_counts["status"].replace({0:"No BGC", 1:">1 BGC"})
+        status_colors = {"No BGC": zero_color,
+                         ">1 BGC": taxa_color.get(taxa_selection, "#8c8c8c")}
 
-        fig = px.pie(status_counts, values='count', names='status', color='status', color_discrete_map=color_map)
-        st.plotly_chart(fig)
+        fig = px.bar(status_counts,x="status",y="count",color="status",text="count",color_discrete_map=status_colors)
+        fig.update_layout(xaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
 
-    zero_only = []
-    one_only = []
-    for i in status_counts_long['FinalTaxonomy'].unique():
-        df_temp = status_counts_long[status_counts_long['FinalTaxonomy'] == i]
-        if df_temp.loc[df_temp['count'] == 0].shape[0] != 0 :
-            zero_count = df_temp.loc[df_temp['count'] == 0]
-            if zero_count['status'].values[0] == 0:
-                one_only.append(i)
-            else :
-                zero_only.append(i)
+        # Ensure taxa_selection is treated as a list
+        top_taxa = [taxa_selection]
+        df = region_df.loc[lambda d: d["FinalTaxonomy"].isin(top_taxa)].groupby(["FinalTaxonomy", "MAG"])["GBK"].count().reset_index()
+        df = df.merge(df.groupby("FinalTaxonomy", observed=False)["MAG"].nunique().reset_index().rename(columns={"MAG": "N_MAG"}))
 
-    st.subheader("MAGs sequencing metrics", divider='grey')
-    display_numerical_feature_comparison(virgo2_inventory, antismash_status)
+        # Color mapping for Plotly
+        palette = {k: taxa_color.get(k, "#8c8c8c") for k in top_taxa}
+
+        # Rename special case
+        UBA629_label = "C. L. vaginae"
+        df["FinalTaxonomy"] = df["FinalTaxonomy"].replace({"UBA629_sp005465875": UBA629_label})
+        if "UBA629_sp005465875" in palette:
+            palette[UBA629_label] = palette.pop("UBA629_sp005465875")
+
+        # Plotly violin
+        fig = px.violin(
+            data_frame=df,
+            x="FinalTaxonomy",
+            y="GBK",
+            color="FinalTaxonomy",
+            color_discrete_map=palette,
+            box=True,  # optional: add boxplot inside
+        )
+
+        fig.update_layout(
+            xaxis_title="",
+            yaxis_title="Number of BGCs per MAG",
+            showlegend=False
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col3:
+        # st.subheader("MAG coverage")
+        MIN_COVERAGE = 0
+        coverage_taxa_plot = pd.merge(region_df, COVERAGE[COVERAGE["Coverage"] > MIN_COVERAGE], on="MAG", how="inner")
+        coverage_taxa_plot = coverage_taxa_plot.loc[lambda df : df["FinalTaxonomy"].isin(top_taxa)]
+        # coverage_taxa_plot["FinalTaxonomy"] = pd.Categorical(coverage_taxa_plot["FinalTaxonomy"],categories=species_to_plot,ordered=True)
+
+        # sort by this categorical column to follow the given order
+        coverage_taxa_plot = coverage_taxa_plot.sort_values(by="FinalTaxonomy")
+
+        coverage_taxa_plot["FinalTaxonomy"] = coverage_taxa_plot["FinalTaxonomy"].replace({"UBA629_sp005465875":UBA629_label})
+
+        fig = px.box(coverage_taxa_plot, x="FinalTaxonomy", y="Coverage", color="FinalTaxonomy", log_y=True, color_discrete_map=palette, points="all")
+        fig.update_layout(
+            xaxis_title="",
+            yaxis_title="log(Coverage)",
+            showlegend=False
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 # Run the page function
 if __name__ == "__main__":
