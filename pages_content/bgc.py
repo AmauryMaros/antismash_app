@@ -160,38 +160,42 @@ def display_taxa_processed(taxa_filter=None):
 
 # Streamlit page function
 def page():
-    st.title("Biosynthetic Gene Clusters")
+    st.header("Biosynthetic Gene Clusters - all MAGs", divider='grey')
 
     # st.subheader("Proportion of BGC identification - all MAGs", divider='grey')
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(spec=[0.3,0.7])
     with col1:
-        st.subheader("BGC identification - all MAGs", divider='grey')
-        # Plot on the top
-        display_antismash_status_pie(antismash_status)
+        st.subheader("BGC identification", divider='grey')
+        status_counts = antismash_status['status'].value_counts().reset_index()
+        status_counts.columns = ['status', 'count']
+        status_counts["status"] = status_counts["status"].replace({0:"No BGC", 1:">1 BGC"})
+        status_colors = {"No BGC": zero_color, ">1 BGC": positive_color}
+        fig = px.bar(status_counts,x="status",y="count",color="status",color_discrete_map=status_colors)
+        st.plotly_chart(fig)
 
     with col2:
 
         st.subheader("VIRGO2 inventory", divider='grey')
         st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
 
-    st.subheader("BGC identification - per species", divider='grey')
-    # Plot on the botton
+    st.header("Biosynthetic Gene Clusters - per taxa", divider='grey')
     taxa_selection = st.selectbox("Taxa selection", sorted(stack_antismash_status['FinalTaxonomy'].unique()), index=sorted(stack_antismash_status['FinalTaxonomy'].unique()).index("Lactobacillus_crispatus"))
     
     col1, col2, col3 = st.columns(3)
+
     with col1:
+        st.subheader("BGC detection rate")
+
         filtered_data = stack_antismash_status[stack_antismash_status['FinalTaxonomy'] == taxa_selection]
         status_counts = filtered_data.groupby('status').size().reset_index(name='count')
         status_counts["status"] = status_counts["status"].replace({0:"No BGC", 1:">1 BGC"})
-        status_colors = {"No BGC": zero_color,
-                         ">1 BGC": taxa_color.get(taxa_selection, "#8c8c8c")}
-
+        status_colors = {"No BGC": zero_color, ">1 BGC": taxa_color.get(taxa_selection, "#8c8c8c")}
         fig = px.bar(status_counts,x="status",y="count",color="status",text="count",color_discrete_map=status_colors)
         fig.update_layout(xaxis_title="")
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
-
+        st.subheader("Number of BGC per MAG")
         # Ensure taxa_selection is treated as a list
         top_taxa = [taxa_selection]
         df = region_df.loc[lambda d: d["FinalTaxonomy"].isin(top_taxa)].groupby(["FinalTaxonomy", "MAG"])["GBK"].count().reset_index()
@@ -225,7 +229,7 @@ def page():
         st.plotly_chart(fig, use_container_width=True)
 
     with col3:
-        # st.subheader("MAG coverage")
+        st.subheader("MAG coverage")
         MIN_COVERAGE = 0
         coverage_taxa_plot = pd.merge(region_df, COVERAGE[COVERAGE["Coverage"] > MIN_COVERAGE], on="MAG", how="inner")
         coverage_taxa_plot = coverage_taxa_plot.loc[lambda df : df["FinalTaxonomy"].isin(top_taxa)]

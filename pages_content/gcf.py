@@ -47,7 +47,7 @@ with open(f"data/accumulation_models.json", "r") as f:
 
 def page():
 
-    st.title("Gene Cluster Families")
+    st.header("Gene Cluster Families - all MAGs", divider="grey")
 
     # ----- Merge full metadata into BGC_table
     merged = BGC_table.merge(virgo2_metadata[["MAG", "FinalTaxonomy"]])
@@ -82,7 +82,7 @@ def page():
     fig = make_subplots(
         rows=2, cols=1,
         shared_xaxes=True, shared_yaxes=True,
-        subplot_titles=("Taxa", "BGC product")
+        # subplot_titles=("Taxa", "BGC product")
     )
 
     # ----- First plot: FinalTaxonomy
@@ -94,7 +94,7 @@ def page():
                 name=col,
                 marker_color=color,
                 legendgroup="taxa",
-                showlegend=False  # we'll control legend visibility
+                showlegend=False
             ),
             row=1, col=1
         )
@@ -127,8 +127,8 @@ def page():
     )
 
     # Axis labels
-    fig.update_yaxes(title_text="Number of BGC", row=1, col=1)
-    fig.update_yaxes(title_text="Number of BGC", row=2, col=1)
+    fig.update_yaxes(title_text="Number of BGC colored by MAG taxonomy", row=1, col=1)
+    fig.update_yaxes(title_text="Number of BGC colored by BGC type", row=2, col=1)
     # fig.update_xaxes(title_text="", row=2, col=1)
 
     # Rotate xticks
@@ -137,12 +137,14 @@ def page():
     st.plotly_chart(fig, use_container_width=True)
 
 
-    st.subheader("Taxa", divider='grey')
+    st.header("Gene Cluster Families - per taxa", divider="grey")
+
     taxa_selection = st.selectbox("Taxa selection", sorted(accumulation_models.keys()),index=sorted(accumulation_models.keys()).index("Lactobacillus_crispatus"))
 
     col1, col2 = st.columns(spec=[0.3,0.7])
 
     with col1:
+        st.subheader("Accumulation model")
         curve_df = pd.DataFrame(accumulation_models[taxa_selection])
         curve_df["Taxa"] = taxa_selection
         palette_tax = [taxa_color.get(taxon, "#8c8c8c") for taxon in [taxa_selection]]
@@ -163,8 +165,7 @@ def page():
         st.plotly_chart(fig1, use_container_width=True)
 
     with col2:
-        # ----- Prepare stacked barplot
-        # BGC order
+        st.subheader("GCFs composition")
         BGC_PRODUCT_ORDER = ["RiPP-like", "LAP", "NRPS", "lanthipeptide-class-i", "lanthipeptide-class-ii",
                             "lanthipeptide-class-iii", "lanthipeptide-class-iv", "lanthipeptide-class-v",
                             "T3PKS", "resorcinol", "arylpolyene", "RRE-containing"]
