@@ -74,7 +74,7 @@ def page():
     taxa_color = virgo2_taxakey.set_index("Taxa")["Color"].to_dict()
     palette_tax = [taxa_color.get(taxon, "#8c8c8c") for taxon in pivot_tax.columns]
 
-    st.dataframe(pivot_tax.loc["FAM_00180"].loc[pivot_tax.loc["FAM_00180"] > 0])
+    # ----- GCF count for hover template
     gcf_count = {}
     for fam in pivot_tax.index:
         tmp = pivot_tax.loc[fam]
