@@ -79,13 +79,13 @@ def page():
     st.code("""
     #!/bin/bash
     #SBATCH --job-name=bigscape
-    #SBATCH --output=path_to_antismash/logs/bigscape_%j.out
-    #SBATCH --error=path_to_antismash/logs/bigscape_%j.err
+    #SBATCH --output=path_to_bigscape/logs/bigscape_%j.out
+    #SBATCH --error=path_to_bigscape/logs/bigscape_%j.err
     #SBATCH --mem=128G
     #SBATCH --cpus-per-task=6
 
     # Go to working directory
-    cd path_to_antismash/BiG-SCAPE/
+    cd path_to_bigscape
 
     # Activate conda env
     source /usr/local/packages/miniconda3/etc/profile.d/conda.sh
