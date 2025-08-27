@@ -204,7 +204,9 @@ def page():
 
         norm_pivot = pd.concat([gcf_sorted, singleton_sorted])
         norm_pivot = norm_pivot.reindex(columns=columns_order).fillna(0)
-        gcf_order = norm_pivot.index.to_list()
+        # gcf_order = norm_pivot.index.to_list()
+        gcf_order = combined_df.groupby("Family")["Class"].value_counts().rename("proportion").reset_index().pivot(index="Family", columns="Class", values="proportion").fillna(0).T.sum().sort_values(ascending=False).index.to_list()
+        gcf_order = [i for i in gcf_order if "singl" not in i] + [j for j in gcf_order if "singl" in j]
         norm_pivot.index = norm_pivot.index.astype(str)
 
         df_to_plot = norm_pivot.reset_index()
@@ -243,3 +245,94 @@ def page():
         ).properties(height=400)
 
         st.altair_chart(fig2, use_container_width=True)
+
+    combined_df = pd.concat([filtered_df, singletons_filtered], ignore_index=True)
+    normalized = combined_df.groupby("Family")["Class"].value_counts().rename("proportion").reset_index() #normalize=True
+    norm_pivot = normalized.pivot(index="Family", columns="Class", values="proportion").fillna(0)
+
+    columns_order = [c for c in BGC_PRODUCT_ORDER if c in norm_pivot.columns] + [c for c in norm_pivot.columns if c not in BGC_PRODUCT_ORDER]
+
+    gcf_mask = norm_pivot.index.str.startswith("FAM_")
+    singleton_mask = norm_pivot.index.str.startswith("singl.")
+    gcf_sorted = norm_pivot[gcf_mask].sort_values(by=columns_order, ascending=False) if gcf_mask.any() else pd.DataFrame(columns=columns_order)
+    singleton_sorted = norm_pivot[singleton_mask].sort_values(by=columns_order, ascending=False) if singleton_mask.any() else pd.DataFrame(columns=columns_order)
+
+    norm_pivot = pd.concat([gcf_sorted, singleton_sorted])
+    norm_pivot = norm_pivot.reindex(columns=columns_order).fillna(0)
+    gcf_order = norm_pivot.T.sum().sort_values(ascending=False).index.to_list()
+    norm_pivot.index = norm_pivot.index.astype(str)
+
+    df_to_plot = norm_pivot.reset_index()
+    if "index" in df_to_plot.columns:
+        df_to_plot = df_to_plot.rename(columns={"index":"Family"})
+
+    df_to_plot = df_to_plot.melt(
+        id_vars="Family",
+        value_vars=norm_pivot.columns,
+        var_name="Class",
+        value_name="Proportion"
+    )
+
+    df_to_plot["Family"] = pd.Categorical(df_to_plot["Family"], categories=gcf_order, ordered=True)
+    df_to_plot = df_to_plot.sort_values("Family").reset_index(drop=True)
+
+    # Handle "mix" types
+    df_to_plot["Class"] = df_to_plot["Class"].apply(lambda x: "mix" if ("," in x or "." in x) else x)
+
+    # Update class_colors: assign "#8c8c8c" to "mix"
+    color_mapping_type_filtered = {k: v for k, v in color_mapping_type.items() if k in norm_pivot.columns}
+    class_colors = {k: rgb_to_hex(v) if 'rgb' in v else v for k, v in color_mapping_type_filtered.items()}
+
+    if "mix" in df_to_plot["Class"].unique():
+        class_colors["mix"] = "#8c8c8c"
+
+    # Build Altair color scale
+    # color_scale = alt.Scale(domain=list(class_colors.keys()), range=list(class_colors.values()))
+
+    # # Create stacked barplot
+    # fig3 = alt.Chart(df_to_plot).mark_bar().encode(
+    #     x=alt.X("Family:N", sort=gcf_order, title=""),
+    #     y=alt.Y("Proportion:Q"), #stack="normalize"
+    #     color=alt.Color("Class:N", scale=color_scale, legend=alt.Legend(orient="top", title="Class")),
+    #     tooltip=["Family", "Class", "Proportion"]
+    # ).properties(height=400)
+    # st.altair_chart(fig3, use_container_width=True)
+
+
+    color_scale = dict(zip(class_colors.keys(), class_colors.values()))
+
+    # Create figure
+    fig3 = go.Figure()
+
+    # Loop through each Class to create stacked bars
+    for cls in df_to_plot["Class"].unique():
+        tmp = df_to_plot[df_to_plot["Class"] == cls]
+
+        fig3.add_trace(
+            go.Bar(
+                x=tmp["Family"],
+                y=tmp["Proportion"],
+                name=cls,
+                marker_color=color_scale.get(cls),  # safe lookup from your color mapping
+                hovertemplate="Family: %{x}<br>Class: " + cls + "<br>Proportion: %{y}<extra></extra>"
+            )
+        )
+
+    # Update layout for stacked bars
+    fig3.update_layout(
+        barmode="stack",
+        height=400,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            title="Class"
+        ),
+        xaxis=dict(title=""),
+        yaxis=dict(title="Proportion")
+    )
+
+    # Show in Streamlit
+    st.plotly_chart(fig3, use_container_width=True)
