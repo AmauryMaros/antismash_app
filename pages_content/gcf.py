@@ -5,10 +5,8 @@ import json
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
 import plotly.io as pio
 pio.renderers.default = "browser"
-
 import altair as alt
 
 @st.cache_data
@@ -22,7 +20,6 @@ def load_data():
     return virgo2_metadata, BGC_table, virgo2_taxakey, regions
 
 virgo2_metadata, BGC_table, virgo2_taxakey, regions = load_data()
-
 
 def rgb_to_hex(rgb_string):
     '''
@@ -40,7 +37,6 @@ def rgb_to_hex(rgb_string):
 with open(f"data/color_mapping_type.json", "r") as f:
     color_mapping_type = json.load(f) 
 color_mapping_type["lanthipeptide-class-iv"] = "magenta"
-
 
 with open(f"data/accumulation_models.json", "r") as f:
     accumulation_models = json.load(f) 
@@ -74,11 +70,11 @@ def page():
     class_colors = {k: rgb_to_hex(v) if 'rgb' in v else v for k, v in color_mapping_type.items()}
     palette_class = [class_colors.get(cls, "#8c8c8c") for cls in pivot_class.columns]
 
-    # # ----- Define color palettes and labels for taxa
+    # ----- Define color palettes and labels for taxa
     taxa_color = virgo2_taxakey.set_index("Taxa")["Color"].to_dict()
     palette_tax = [taxa_color.get(taxon, "#8c8c8c") for taxon in pivot_tax.columns]
 
-    # Create subplot layout with 2 rows, 1 column
+    # ----- Create subplot layout with 2 rows, 1 column
     fig = make_subplots(
         rows=2, cols=1,
         shared_xaxes=True, shared_yaxes=True,
@@ -87,6 +83,7 @@ def page():
 
     # ----- First plot: FinalTaxonomy
     for col, color in zip(pivot_tax.columns, palette_tax):
+
         fig.add_trace(
             go.Bar(
                 x=pivot_tax.index,
@@ -94,10 +91,12 @@ def page():
                 name=col,
                 marker_color=color,
                 legendgroup="taxa",
-                showlegend=False
-            ),
+                showlegend=False,
+                hovertemplate=(f"Taxa name: {col}<br>" + "Taxa counts: %{y}<extra></extra>")
+                ),
             row=1, col=1
         )
+        fig.update_layout(hoverlabel=dict(bgcolor="white",font_size=16, font_color="black"))
 
     # ----- Second plot: Class
     for col, color in zip(pivot_class.columns, palette_class):
@@ -108,10 +107,12 @@ def page():
                 name=col,
                 marker_color=color,
                 legendgroup="class",
-                showlegend=False
+                showlegend=False,
+                hovertemplate=(f"Class: {col}<br>" + "Counts: %{y}<extra></extra>")
             ),
             row=2, col=1
         )
+        fig.update_layout(hoverlabel=dict(bgcolor="white",font_size=16, font_color="black"))
 
     # Layout adjustments
     fig.update_layout(
