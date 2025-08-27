@@ -137,7 +137,6 @@ def page():
 
     st.plotly_chart(fig, use_container_width=True)
 
-
     st.header("Gene Cluster Families - per taxa", divider="grey")
 
     taxa_selection = st.selectbox("Taxa selection", sorted(accumulation_models.keys()),index=sorted(accumulation_models.keys()).index("Lactobacillus_crispatus"))
