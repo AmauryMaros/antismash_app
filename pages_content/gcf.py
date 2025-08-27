@@ -74,6 +74,13 @@ def page():
     taxa_color = virgo2_taxakey.set_index("Taxa")["Color"].to_dict()
     palette_tax = [taxa_color.get(taxon, "#8c8c8c") for taxon in pivot_tax.columns]
 
+    st.dataframe(pivot_tax.loc["FAM_00180"].loc[pivot_tax.loc["FAM_00180"] > 0])
+    gcf_count = {}
+    for fam in pivot_tax.index:
+        tmp = pivot_tax.loc[fam]
+        tmp = tmp.sum()
+        gcf_count[fam] = tmp
+
     # ----- Create subplot layout with 2 rows, 1 column
     fig = make_subplots(
         rows=2, cols=1,
@@ -83,7 +90,6 @@ def page():
 
     # ----- First plot: FinalTaxonomy
     for col, color in zip(pivot_tax.columns, palette_tax):
-
         fig.add_trace(
             go.Bar(
                 x=pivot_tax.index,
@@ -92,7 +98,9 @@ def page():
                 marker_color=color,
                 legendgroup="taxa",
                 showlegend=False,
-                hovertemplate=(f"Taxa name: {col}<br>" + "Taxa counts: %{y}<extra></extra>")
+                text=[int(gcf_count[fam]) for fam in pivot_tax.index],
+                textposition="none",
+                hovertemplate = f"Taxa name: {col}<br>" + "Taxa counts: %{y}<br>" + "Total: %{text}<extra></extra>",
                 ),
             row=1, col=1
         )
@@ -108,7 +116,9 @@ def page():
                 marker_color=color,
                 legendgroup="class",
                 showlegend=False,
-                hovertemplate=(f"Class: {col}<br>" + "Counts: %{y}<extra></extra>")
+                text=[int(gcf_count[fam]) for fam in pivot_tax.index],
+                textposition="none", 
+                hovertemplate=f"Class: {col}<br>" + "Counts: %{y}<br>" + "Total: %{text}<extra></extra>"
             ),
             row=2, col=1
         )
