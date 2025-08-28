@@ -50,7 +50,15 @@ def page():
 
     # ----- Get top 20 families by total count
     N_GCF = st.slider("Number of GCF:", min_value=1, max_value=merged["Family"].nunique(), value=50)
-    top_families = merged["Family"].value_counts().head(N_GCF).index
+    # top_families = merged["Family"].value_counts().head(N_GCF).index
+
+    # ----- Add FAM selector
+    FAM_TO_GREP = st.multiselect("Search by GCF ID", options=sorted(merged["Family"].value_counts().index.to_list()), default=None)
+    
+    if FAM_TO_GREP :
+        top_families = merged["Family"].value_counts().index
+    else :
+        top_families = merged["Family"].value_counts().head(N_GCF).index
 
     # ----- Filter merged data to top families
     filtered_merged = merged[merged["Family"].isin(top_families)]
@@ -80,6 +88,10 @@ def page():
         tmp = pivot_tax.loc[fam]
         tmp = tmp.sum()
         gcf_count[fam] = tmp
+
+    if FAM_TO_GREP :
+        pivot_tax = pivot_tax.loc[FAM_TO_GREP]
+        pivot_class = pivot_class.loc[FAM_TO_GREP]
 
     # ----- Create subplot layout with 2 rows, 1 column
     fig = make_subplots(
