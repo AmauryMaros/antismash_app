@@ -12,7 +12,7 @@ def load_data():
     # Load data
     virgo2_inventory = pd.read_csv("data/03_virgo2_metadata.csv")
     region_summary_original = pd.read_csv("data/04_regions.csv")    
-    virgo2_taxakey = pd.read_csv("data/06_VIRGO2_taxaKey.csv")
+    virgo2_taxakey = pd.read_csv("data/VIRGO2_taxaKey_modif.csv")
     COVERAGE = pd.read_csv("data/coverage.csv")
 
     return virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE
@@ -22,6 +22,22 @@ virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE = load_data(
 
 zero_color = "#708090"
 positive_color = "#90EE90"
+
+
+the_cols = pd.DataFrame({
+    "species": [
+        "G. leopoldii", "G. piotii", "G. sp003585735", "G. sp003585845", "G. spNov1",
+        "G. spNov2", "G. vaginalis A", "G. vaginalis C", "G. vaginalis D", "G. vaginalis E",
+        "G. vaginalis F", "G. vaginalis H", "G. swidsinkii 1", "G. swidsinkii", 
+        "G. vaginalis", "Gardnerella"
+    ],
+    "color": [
+        "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494",
+        "#B3B3B3", "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#1E3602",
+        "#E6AB02", "#666666"
+    ]
+})
+
 
 color_map = {1: positive_color, 0: zero_color}
 taxa_color = virgo2_taxakey.set_index("Taxa")["Color"].to_dict()

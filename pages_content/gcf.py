@@ -14,7 +14,7 @@ def load_data():
     # Load data
     virgo2_metadata = pd.read_csv("data/03_virgo2_metadata.csv")
     regions = pd.read_csv("data/04_regions.csv")    
-    virgo2_taxakey = pd.read_csv("data/06_VIRGO2_taxaKey.csv")
+    virgo2_taxakey = pd.read_csv("data/VIRGO2_taxaKey_modif.csv")
     # COVERAGE = pd.read_csv("data/coverage.csv")
     BGC_table = pd.read_csv(f"data/01_BGC_table.csv")
     return virgo2_metadata, BGC_table, virgo2_taxakey, regions
