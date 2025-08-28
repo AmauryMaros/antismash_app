@@ -43,7 +43,7 @@ with open(f"data/accumulation_models.json", "r") as f:
 
 def page():
 
-    st.header("Gene Cluster Families - all MAGs", divider="grey")
+    st.header("Gene Cluster Families - all", divider="grey")
 
     # ----- Merge full metadata into BGC_table
     merged = BGC_table.merge(virgo2_metadata[["MAG", "FinalTaxonomy"]])
