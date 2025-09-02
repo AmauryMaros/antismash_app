@@ -48,6 +48,16 @@ def page():
     # ----- Merge full metadata into BGC_table
     merged = BGC_table.merge(virgo2_metadata[["MAG", "FinalTaxonomy"]])
 
+    singletons = regions[~regions["GBK"].isin(BGC_table["GBK"])]
+    singletons = singletons[["MAG", "contig_id", "GBK", "type", "FinalTaxonomy"]].rename(
+        columns={"contig_id": "Description", "type": "Class"}
+    )
+    singletons["Category"] = "singleton"
+    singletons["Family"] = [f"singl. {i+1}" for i in range(singletons.shape[0])]
+    singletons = singletons[merged.columns]
+
+    merged = pd.concat([merged, singletons], axis=0)
+
     # ----- Get top 20 families by total count
     N_GCF = st.slider("Number of GCF:", min_value=1, max_value=merged["Family"].nunique(), value=50)
     # top_families = merged["Family"].value_counts().head(N_GCF).index
@@ -194,13 +204,13 @@ def page():
 
         filtered_df = merged[merged["FinalTaxonomy"] == taxa_selection]
 
-        singletons = regions[~regions["GBK"].isin(BGC_table["GBK"])]
-        singletons = singletons[["MAG", "contig_id", "GBK", "type", "FinalTaxonomy"]].rename(
-            columns={"contig_id": "Description", "type": "Class"}
-        )
-        singletons["Category"] = "singleton"
-        singletons["Family"] = [f"singl. {i+1}" for i in range(singletons.shape[0])]
-        singletons = singletons[merged.columns]
+        # singletons = regions[~regions["GBK"].isin(BGC_table["GBK"])]
+        # singletons = singletons[["MAG", "contig_id", "GBK", "type", "FinalTaxonomy"]].rename(
+        #     columns={"contig_id": "Description", "type": "Class"}
+        # )
+        # singletons["Category"] = "singleton"
+        # singletons["Family"] = [f"singl. {i+1}" for i in range(singletons.shape[0])]
+        # singletons = singletons[merged.columns]
         singletons_filtered = singletons[singletons["FinalTaxonomy"] == taxa_selection].copy()
 
         combined_df = pd.concat([filtered_df, singletons_filtered], ignore_index=True)
