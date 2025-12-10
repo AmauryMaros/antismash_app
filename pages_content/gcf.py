@@ -20,6 +20,7 @@ def load_data():
     return virgo2_metadata, BGC_table, virgo2_taxakey, regions
 
 virgo2_metadata, BGC_table, virgo2_taxakey, regions = load_data()
+virgo2_metadata = virgo2_metadata[(virgo2_metadata["Coverage"] > 10) & (virgo2_metadata["Complete"] > 80)]
 
 def rgb_to_hex(rgb_string):
     '''

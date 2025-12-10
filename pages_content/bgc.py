@@ -18,7 +18,11 @@ def load_data():
     return virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE
 
 # Load the data using the cached function
-virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE = load_data()
+virgo2_metadata_all, region_summary_original, virgo2_taxakey, COVERAGE = load_data()
+
+# # Filter MAGs
+virgo2_inventory = virgo2_metadata_all[(virgo2_metadata_all["Coverage"] > 10) & (virgo2_metadata_all["Complete"] > 80)]
+
 
 zero_color = "#708090"
 positive_color = "#90EE90"
@@ -195,8 +199,7 @@ def page():
         st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
 
     st.header("Biosynthetic Gene Clusters - per taxa", divider='grey')
-    taxa_selection = st.selectbox("Taxa selection", sorted(stack_antismash_status['FinalTaxonomy'].unique()), index=sorted(stack_antismash_status['FinalTaxonomy'].unique()).index("Lactobacillus_crispatus"))
-    
+    taxa_selection = st.selectbox("Taxa selection", sorted(virgo2_inventory['FinalTaxonomy'].unique()), index=sorted(virgo2_inventory['FinalTaxonomy'].unique()).index("Lactobacillus_crispatus"))
     col1, col2, col3 = st.columns(3)
 
     with col1:
