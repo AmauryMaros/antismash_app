@@ -245,7 +245,7 @@ def page():
     # Rotate xticks
     fig.update_xaxes(tickangle=-45)
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.header("Gene Cluster Families - per taxa", divider="grey")
 
@@ -300,7 +300,7 @@ def page():
             showlegend=False,
             height=400  # set fixed height to align with col2
         )
-        st.plotly_chart(fig1, use_container_width=True)
+        st.plotly_chart(fig1, width='stretch')
 
     # with col2:
     #     st.subheader("GCFs composition")
@@ -463,4 +463,4 @@ def page():
         )
 
         # Show in Streamlit
-        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(fig3, width='stretch')

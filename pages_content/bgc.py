@@ -24,25 +24,8 @@ virgo2_metadata_all, region_summary_original, virgo2_taxakey, COVERAGE = load_da
 # # Filter MAGs
 virgo2_inventory = virgo2_metadata_all[(virgo2_metadata_all["Coverage"] > 10) & (virgo2_metadata_all["Complete"] > 80)]
 
-
 zero_color = "#708090"
 positive_color = "#90EE90"
-
-
-# the_cols = pd.DataFrame({
-#     "species": [
-#         "G. leopoldii", "G. piotii", "G. sp003585735", "G. sp003585845", "G. spNov1",
-#         "G. spNov2", "G. vaginalis A", "G. vaginalis C", "G. vaginalis D", "G. vaginalis E",
-#         "G. vaginalis F", "G. vaginalis H", "G. swidsinskii 1", "G. swidsinskii", 
-#         "G. vaginalis", "Gardnerella"
-#     ],
-#     "color": [
-#         "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494",
-#         "#B3B3B3", "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#1E3602",
-#         "#E6AB02", "#666666"
-#     ]
-# })
-
 
 color_map = {1: positive_color, 0: zero_color}
 taxa_color = virgo2_taxakey.set_index("Taxa")["Color"].to_dict()
@@ -101,12 +84,12 @@ def page():
     col1, col2 = st.columns(spec=[0.3,0.7])
     with col1:
         st.subheader("BGC identification", divider='grey')
-        status_counts = antismash_status['status'].value_counts().reset_index()
+        status_counts = antismash_status.loc[lambda df : df["MAG"].isin(virgo2_inventory["MAG"])]['status'].value_counts().reset_index()
         status_counts.columns = ['status', 'count']
         status_counts["status"] = status_counts["status"].replace({0:"No BGC", 1:">1 BGC"})
         status_colors = {"No BGC": zero_color, ">1 BGC": positive_color}
         fig = px.bar(status_counts,x="status",y="count",color="status",color_discrete_map=status_colors)
-        fig.update_layout(yaxis_title="Number og MAGs")
+        fig.update_layout(yaxis_title="Number of MAGs")
         st.plotly_chart(fig)
 
     with col2:
@@ -145,7 +128,7 @@ def page():
         status_colors = {"No BGC": zero_color, ">1 BGC": taxa_color.get(taxa_selection, "#8c8c8c")}
         fig = px.bar(status_counts,x="status",y="count",color="status",text="count",color_discrete_map=status_colors)
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     with col2:
         st.subheader("Number of BGC per MAG")
@@ -180,7 +163,7 @@ def page():
             showlegend=False
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with col3:
         st.subheader("MAG coverage")
@@ -217,13 +200,26 @@ def page():
             showlegend=False
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
 # Run the page function
 if __name__ == "__main__":
     page()
 
 
+# the_cols = pd.DataFrame({
+#     "species": [
+#         "G. leopoldii", "G. piotii", "G. sp003585735", "G. sp003585845", "G. spNov1",
+#         "G. spNov2", "G. vaginalis A", "G. vaginalis C", "G. vaginalis D", "G. vaginalis E",
+#         "G. vaginalis F", "G. vaginalis H", "G. swidsinskii 1", "G. swidsinskii", 
+#         "G. vaginalis", "Gardnerella"
+#     ],
+#     "color": [
+#         "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494",
+#         "#B3B3B3", "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#1E3602",
+#         "#E6AB02", "#666666"
+#     ]
+# })
 
 # Functions for displaying data
 # def display_antismash_status_pie(antismash_status):
