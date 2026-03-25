@@ -105,7 +105,6 @@ def page():
     <div class="justified-text">
                 
     You can refine the selection using additional filters:
-    # - <b>Number of GCF</b>: Number of GCFs displayed on the x-axis
     - <b>GCF ID</b>: Display specific GCFs (one or multiple) by selecting them directly.
     - <b>BGC Class</b>: Focus on GCFs that contain specific BGC types.
     - <b>Taxa</b>: Explore GCFs associated with a given taxon or a list of taxa.
