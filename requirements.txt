@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
+json
 plotly
-streamlit-pdf-viewer
 matplotlib

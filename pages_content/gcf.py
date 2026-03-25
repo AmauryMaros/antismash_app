@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 pio.renderers.default = "browser"
-import altair as alt
+# import altair as alt
 
 @st.cache_data
 def load_data():
