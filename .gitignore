@@ -3,3 +3,5 @@ pages_content/__pycache__/
 old/
 test.ipynb
 pivot_tax.csv
+clean_data.ipynb
+03_virgo2_metadata.csv

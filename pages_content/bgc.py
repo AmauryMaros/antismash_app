@@ -1,7 +1,8 @@
-# pages_content/data_quality.py
+# pages_content/bgc.py
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -10,7 +11,7 @@ from plotly.subplots import make_subplots
 @st.cache_data
 def load_data():
     # Load data
-    virgo2_inventory = pd.read_csv("data/03_virgo2_metadata.csv")
+    virgo2_inventory = pd.read_csv("data/MAG_inventory.csv")
     region_summary_original = pd.read_csv("data/04_regions.csv")    
     virgo2_taxakey = pd.read_csv("data/VIRGO2_taxaKey_modif.csv")
     COVERAGE = pd.read_csv("data/coverage.csv")
@@ -182,6 +183,32 @@ def display_taxa_processed(taxa_filter=None):
 def page():
     st.header("Biosynthetic Gene Clusters - all MAGs", divider='grey')
 
+    N_MAG = virgo2_metadata_all.shape[0]
+
+    st.markdown(f"""
+    <div class="justified-text">
+
+    BGC detection is analyzed in relation to MAG features. By default, only MAGs with coverage above 10X and completeness greater than 80% are included on this page.
+
+    You can adjust the coverage and completeness thresholds here if needed.
+                
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        min_coverage = st.number_input(
+            "Insert a number", value=10, placeholder="Default is 10"
+        )
+    with col2:
+        min_completeness = st.number_input(
+            "Insert a number", value=80, placeholder="Default is 80"
+        )
+
+    st.write("MAGs with a minimum coverage of", min_coverage, " and a completeness greather than", min_completeness, "% will be considered")
+
+    virgo2_inventory = virgo2_metadata_all[(virgo2_metadata_all["Coverage"] > min_coverage) & (virgo2_metadata_all["Complete"] > min_completeness)]
+
     # st.subheader("Proportion of BGC identification - all MAGs", divider='grey')
     col1, col2 = st.columns(spec=[0.3,0.7])
     with col1:
@@ -199,13 +226,31 @@ def page():
         st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
 
     st.header("Biosynthetic Gene Clusters - per taxa", divider='grey')
+
+    st.markdown(f"""
+    <div class="justified-text">
+                
+    Use the <b>Taxa selection</b> menu below to explore BGC detection for a specific taxon.
+
+    The visualizations will include:
+    <ul>
+        <li>MAG detection rate</li>
+        <li>Distribution of the number of BGCs per MAG</li>
+        <li>Coverage of MAGs belonging to the selected taxon</li>
+    </ul>
+                
+    </div>
+    """, unsafe_allow_html=True)
+
     taxa_selection = st.selectbox("Taxa selection", sorted(virgo2_inventory['FinalTaxonomy'].unique()), index=sorted(virgo2_inventory['FinalTaxonomy'].unique()).index("Lactobacillus_crispatus"))
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.subheader("BGC detection rate")
 
-        filtered_data = stack_antismash_status[stack_antismash_status['FinalTaxonomy'] == taxa_selection]
+
+        filtered_data = stack_antismash_status[(stack_antismash_status['FinalTaxonomy'] == taxa_selection) & (stack_antismash_status["MAG"].isin(virgo2_inventory["MAG"]))]
         status_counts = filtered_data.groupby('status').size().reset_index(name='count')
         status_counts["status"] = status_counts["status"].replace({0:"No BGC", 1:">1 BGC"})
         status_colors = {"No BGC": zero_color, ">1 BGC": taxa_color.get(taxa_selection, "#8c8c8c")}
@@ -219,6 +264,7 @@ def page():
         top_taxa = [taxa_selection]
         df = region_df.loc[lambda d: d["FinalTaxonomy"].isin(top_taxa)].groupby(["FinalTaxonomy", "MAG"])["GBK"].count().reset_index()
         df = df.merge(df.groupby("FinalTaxonomy", observed=False)["MAG"].nunique().reset_index().rename(columns={"MAG": "N_MAG"}))
+        df = df[df["MAG"].isin(virgo2_inventory["MAG"])].reset_index(drop=True)
 
         # Color mapping for Plotly
         palette = {k: taxa_color.get(k, "#8c8c8c") for k in top_taxa}
@@ -258,13 +304,30 @@ def page():
         coverage_taxa_plot = coverage_taxa_plot.sort_values(by="FinalTaxonomy")
 
         coverage_taxa_plot["FinalTaxonomy"] = coverage_taxa_plot["FinalTaxonomy"].replace({"UBA629_sp005465875":UBA629_label})
+        coverage_taxa_plot = coverage_taxa_plot[coverage_taxa_plot["MAG"].isin(virgo2_inventory["MAG"])]
 
-        fig = px.box(coverage_taxa_plot, x="FinalTaxonomy", y="Coverage", color="FinalTaxonomy", log_y=True, color_discrete_map=palette, points="all")
+        # fig = px.box(coverage_taxa_plot, x="FinalTaxonomy", y="Coverage", color="FinalTaxonomy", log_y=True, color_discrete_map=palette, points="all")
+        # fig.update_layout(
+        #     xaxis_title="",
+        #     yaxis_title="log(Coverage)",
+        #     showlegend=False
+        # )
+        
+        coverage_taxa_plot["log_Coverage"] = np.log10(coverage_taxa_plot["Coverage"] + 1)  # +1 to avoid log(0)
+        fig = px.box(
+            coverage_taxa_plot, 
+            x="FinalTaxonomy", 
+            y="log_Coverage", 
+            color="FinalTaxonomy", 
+            color_discrete_map=palette, 
+            points="all"
+        )
         fig.update_layout(
             xaxis_title="",
-            yaxis_title="log(Coverage)",
+            yaxis_title="log10(Coverage)",
             showlegend=False
         )
+
         st.plotly_chart(fig, use_container_width=True)
 
 # Run the page function
