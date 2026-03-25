@@ -4,4 +4,7 @@ old/
 test.ipynb
 pivot_tax.csv
 clean_data.ipynb
-03_virgo2_metadata.csv
+data/03_virgo2_metadata.csv
+data/04_regions.csv
+data/taxaKey.csv
+data/VIRGO2_taxaKey_modif.csv

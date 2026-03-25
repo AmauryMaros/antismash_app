@@ -11,12 +11,12 @@ from plotly.subplots import make_subplots
 @st.cache_data
 def load_data():
     # Load data
-    virgo2_inventory = pd.read_csv("data/MAG_inventory.csv")
-    region_summary_original = pd.read_csv("data/04_regions.csv")    
-    virgo2_taxakey = pd.read_csv("data/VIRGO2_taxaKey_modif.csv")
+    virgo2_metadata_all = pd.read_csv("data/MAG_inventory.csv")
+    region_summary_original = pd.read_csv("data/regions.csv")    
+    virgo2_taxakey = pd.read_csv("data/06_VIRGO2_taxaKey.csv")
     COVERAGE = pd.read_csv("data/coverage.csv")
 
-    return virgo2_inventory, region_summary_original, virgo2_taxakey, COVERAGE
+    return virgo2_metadata_all, region_summary_original, virgo2_taxakey, COVERAGE
 
 # Load the data using the cached function
 virgo2_metadata_all, region_summary_original, virgo2_taxakey, COVERAGE = load_data()
@@ -29,19 +29,19 @@ zero_color = "#708090"
 positive_color = "#90EE90"
 
 
-the_cols = pd.DataFrame({
-    "species": [
-        "G. leopoldii", "G. piotii", "G. sp003585735", "G. sp003585845", "G. spNov1",
-        "G. spNov2", "G. vaginalis A", "G. vaginalis C", "G. vaginalis D", "G. vaginalis E",
-        "G. vaginalis F", "G. vaginalis H", "G. swidsinkii 1", "G. swidsinkii", 
-        "G. vaginalis", "Gardnerella"
-    ],
-    "color": [
-        "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494",
-        "#B3B3B3", "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#1E3602",
-        "#E6AB02", "#666666"
-    ]
-})
+# the_cols = pd.DataFrame({
+#     "species": [
+#         "G. leopoldii", "G. piotii", "G. sp003585735", "G. sp003585845", "G. spNov1",
+#         "G. spNov2", "G. vaginalis A", "G. vaginalis C", "G. vaginalis D", "G. vaginalis E",
+#         "G. vaginalis F", "G. vaginalis H", "G. swidsinskii 1", "G. swidsinskii", 
+#         "G. vaginalis", "Gardnerella"
+#     ],
+#     "color": [
+#         "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494",
+#         "#B3B3B3", "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#1E3602",
+#         "#E6AB02", "#666666"
+#     ]
+# })
 
 
 color_map = {1: positive_color, 0: zero_color}
@@ -66,129 +66,17 @@ status_counts['Total'] = status_counts.sum(axis=1)
 status_counts = status_counts.sort_values(by='Total', ascending=False).drop(columns='Total')
 status_counts_long = status_counts.reset_index().melt(id_vars='FinalTaxonomy', var_name='status', value_name='count')
 
-# Functions for displaying data
-def display_antismash_status_pie(antismash_status):
-    status_counts = antismash_status['status'].value_counts().reset_index()
-    status_counts.columns = ['status', 'count']
-    color_map = {1: positive_color, 0: zero_color}
-    status_counts['color'] = status_counts['status'].map(color_map)
-    
-    fig = px.pie(
-        status_counts, 
-        values='count', 
-        names='status', 
-        color='status',
-        title='Proportion of BGC identification (MAG)',
-        color_discrete_map=color_map
-    )
-    st.plotly_chart(fig)
-
-def display_numerical_feature_comparison(mag_inventory, antismash_status):
-    numerical_columns = [col for col in mag_inventory.select_dtypes(include=['float64', 'int64']).columns 
-                         if col not in ['Timepoint', 'FilterContam', 'red_value', 'warnings']]
-    
-    n_cols = 4
-    n_rows = (len(numerical_columns) + n_cols - 1) // n_cols
-    fig = make_subplots(rows=n_rows, cols=n_cols, subplot_titles=numerical_columns)
-
-    merged_data = mag_inventory.merge(antismash_status, on="MAG", how="left")
-
-    for i, col in enumerate(numerical_columns):
-        row, col_pos = divmod(i, n_cols)
-        for status in merged_data['status'].unique():
-            filtered_data = merged_data[merged_data['status'] == status]
-            fig.add_trace(
-                go.Box(y=filtered_data[col], name=f"Status {status}", boxmean=True, marker_color=color_map[status]),
-                row=row + 1, col=col_pos + 1
-            )
-        fig.update_yaxes(title_text="", row=row + 1, col=col_pos + 1)
-
-    fig.update_layout(height=500 * n_rows, width=1500, showlegend=False)
-    st.plotly_chart(fig)
-
-def plot_mean_sequence_length(mean_length_data):
-
-    fig = go.Figure()
-
-    for status in mean_length_data['status'].unique():
-        filtered_data = mean_length_data[mean_length_data['status'] == status]
-        fig.add_trace(
-            go.Histogram(
-                x=filtered_data['length'],
-                name=f"Status {status}",
-                marker_color=color_map[status],
-                nbinsx=200
-            )
-        )
-
-    fig.update_layout(
-        title="Mean Contig Length per MAG",
-        height=500, width=600,
-        xaxis_title="Contig Length",
-        yaxis_title="Frequency",
-        barmode='overlay',
-        xaxis=dict(range=[-20000, 1000000]),
-        showlegend=True
-    )
-    st.plotly_chart(fig)
-
-def plot_number_of_sequences(count_length_data):
-
-    fig = go.Figure()
-
-    for status in count_length_data['status'].unique():
-        filtered_data = count_length_data[count_length_data['status'] == status]
-        fig.add_trace(
-            go.Histogram(
-                x=filtered_data['length'],
-                name=f"Status {status}",
-                marker_color=color_map[status],
-                nbinsx=200
-            )
-        )
-
-    fig.update_layout(
-        title="Number of contigs per MAG",
-        height=500, width=600,
-        xaxis_title="Number of contigs",
-        yaxis_title="Frequency",
-        barmode='overlay',
-        xaxis=dict(range=[-1000, 10000]),
-        showlegend=True
-    )
-    st.plotly_chart(fig)
-
-def display_taxa_processed(taxa_filter=None):
-    if taxa_filter is not None :
-        to_plot = status_counts_long[status_counts_long['FinalTaxonomy'].str.contains(taxa_filter, case=False, na=False)] 
-    else :
-        to_plot = status_counts_long
-
-    color_map = {1: "blue", 0: "red"}
-    fig = px.bar(
-        to_plot, 
-        x='count', 
-        y='FinalTaxonomy', 
-        color='status', 
-        title="", 
-        labels={"FinalTaxonomy": "Final Taxonomy", "count": "Count", "status": "Status"}, 
-        height=1000,
-        text_auto=True,
-        color_discrete_map=color_map
-    )
-
-    st.plotly_chart(fig)
-
 # Streamlit page function
 def page():
     st.header("Biosynthetic Gene Clusters - all MAGs", divider='grey')
 
-    N_MAG = virgo2_metadata_all.shape[0]
+    # N_MAG = virgo2_metadata_all.shape[0]
+    virgo2_inventory = virgo2_metadata_all[(virgo2_metadata_all["Coverage"] > 10) & (virgo2_metadata_all["Complete"] > 80)]
 
     st.markdown(f"""
     <div class="justified-text">
 
-    BGC detection is analyzed in relation to MAG features. By default, only MAGs with coverage above 10X and completeness greater than 80% are included on this page.
+    BGC detection is analyzed in relation to MAG features. By default, only MAGs with coverage above 10X and completeness greater than 80% are included on this page, representing a number of {virgo2_inventory.shape[0]} MAGs (over {virgo2_metadata_all.shape[0]} MAGs part of the VIRGO2 database).
 
     You can adjust the coverage and completeness thresholds here if needed.
                 
@@ -218,11 +106,12 @@ def page():
         status_counts["status"] = status_counts["status"].replace({0:"No BGC", 1:">1 BGC"})
         status_colors = {"No BGC": zero_color, ">1 BGC": positive_color}
         fig = px.bar(status_counts,x="status",y="count",color="status",color_discrete_map=status_colors)
+        fig.update_layout(yaxis_title="Number og MAGs")
         st.plotly_chart(fig)
 
     with col2:
 
-        st.subheader("VIRGO2 inventory", divider='grey')
+        st.subheader("MAGs inventory", divider='grey')
         st.dataframe(pd.merge(virgo2_inventory, antismash_status, on='MAG', how='left'))
 
     st.header("Biosynthetic Gene Clusters - per taxa", divider='grey')
@@ -333,3 +222,118 @@ def page():
 # Run the page function
 if __name__ == "__main__":
     page()
+
+
+
+# Functions for displaying data
+# def display_antismash_status_pie(antismash_status):
+#     status_counts = antismash_status['status'].value_counts().reset_index()
+#     status_counts.columns = ['status', 'count']
+#     color_map = {1: positive_color, 0: zero_color}
+#     status_counts['color'] = status_counts['status'].map(color_map)
+    
+#     fig = px.pie(
+#         status_counts, 
+#         values='count', 
+#         names='status', 
+#         color='status',
+#         title='Proportion of BGC identification (MAG)',
+#         color_discrete_map=color_map
+#     )
+#     st.plotly_chart(fig)
+
+# def display_numerical_feature_comparison(mag_inventory, antismash_status):
+#     numerical_columns = [col for col in mag_inventory.select_dtypes(include=['float64', 'int64']).columns 
+#                          if col not in ['Timepoint', 'FilterContam', 'red_value', 'warnings']]
+    
+#     n_cols = 4
+#     n_rows = (len(numerical_columns) + n_cols - 1) // n_cols
+#     fig = make_subplots(rows=n_rows, cols=n_cols, subplot_titles=numerical_columns)
+
+#     merged_data = mag_inventory.merge(antismash_status, on="MAG", how="left")
+
+#     for i, col in enumerate(numerical_columns):
+#         row, col_pos = divmod(i, n_cols)
+#         for status in merged_data['status'].unique():
+#             filtered_data = merged_data[merged_data['status'] == status]
+#             fig.add_trace(
+#                 go.Box(y=filtered_data[col], name=f"Status {status}", boxmean=True, marker_color=color_map[status]),
+#                 row=row + 1, col=col_pos + 1
+#             )
+#         fig.update_yaxes(title_text="", row=row + 1, col=col_pos + 1)
+
+#     fig.update_layout(height=500 * n_rows, width=1500, showlegend=False)
+#     st.plotly_chart(fig)
+
+# def plot_mean_sequence_length(mean_length_data):
+
+#     fig = go.Figure()
+
+#     for status in mean_length_data['status'].unique():
+#         filtered_data = mean_length_data[mean_length_data['status'] == status]
+#         fig.add_trace(
+#             go.Histogram(
+#                 x=filtered_data['length'],
+#                 name=f"Status {status}",
+#                 marker_color=color_map[status],
+#                 nbinsx=200
+#             )
+#         )
+
+#     fig.update_layout(
+#         title="Mean Contig Length per MAG",
+#         height=500, width=600,
+#         xaxis_title="Contig Length",
+#         yaxis_title="Frequency",
+#         barmode='overlay',
+#         xaxis=dict(range=[-20000, 1000000]),
+#         showlegend=True
+#     )
+#     st.plotly_chart(fig)
+
+# def plot_number_of_sequences(count_length_data):
+
+#     fig = go.Figure()
+
+#     for status in count_length_data['status'].unique():
+#         filtered_data = count_length_data[count_length_data['status'] == status]
+#         fig.add_trace(
+#             go.Histogram(
+#                 x=filtered_data['length'],
+#                 name=f"Status {status}",
+#                 marker_color=color_map[status],
+#                 nbinsx=200
+#             )
+#         )
+
+#     fig.update_layout(
+#         title="Number of contigs per MAG",
+#         height=500, width=600,
+#         xaxis_title="Number of contigs",
+#         yaxis_title="Frequency",
+#         barmode='overlay',
+#         xaxis=dict(range=[-1000, 10000]),
+#         showlegend=True
+#     )
+#     st.plotly_chart(fig)
+
+# def display_taxa_processed(taxa_filter=None):
+#     if taxa_filter is not None :
+#         to_plot = status_counts_long[status_counts_long['FinalTaxonomy'].str.contains(taxa_filter, case=False, na=False)] 
+#     else :
+#         to_plot = status_counts_long
+
+#     color_map = {1: "blue", 0: "red"}
+#     fig = px.bar(
+#         to_plot, 
+#         x='count', 
+#         y='FinalTaxonomy', 
+#         color='status', 
+#         title="", 
+#         labels={"FinalTaxonomy": "Final Taxonomy", "count": "Count", "status": "Status"}, 
+#         height=1000,
+#         text_auto=True,
+#         color_discrete_map=color_map
+#     )
+
+#     st.plotly_chart(fig)

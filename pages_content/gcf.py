@@ -15,9 +15,8 @@ import altair as alt
 def load_data():
     # Load data
     virgo2_inventory = pd.read_csv("data/MAG_inventory.csv")
-    regions = pd.read_csv("data/04_regions.csv")    
-    virgo2_taxakey = pd.read_csv("data/VIRGO2_taxaKey_modif.csv")
-    # COVERAGE = pd.read_csv("data/coverage.csv")
+    regions = pd.read_csv("data/regions.csv")    
+    virgo2_taxakey = pd.read_csv("data/06_VIRGO2_taxaKey.csv")
     BGC_table = pd.read_csv(f"data/01_BGC_table.csv")
     return virgo2_inventory, BGC_table, virgo2_taxakey, regions
 
@@ -42,6 +41,7 @@ color_mapping_type["lanthipeptide-class-iv"] = "magenta"
 
 with open(f"data/accumulation_models.json", "r") as f:
     accumulation_models = json.load(f) 
+accumulation_models["Gardnerella_swidsinskii"] = accumulation_models.pop("Gardnerella_swidsinkii")
 
 def page():
 
