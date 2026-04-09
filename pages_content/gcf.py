@@ -62,14 +62,14 @@ def page():
     col1, col2 = st.columns(2)
     with col1:
         min_coverage = st.number_input(
-            "Insert a number", value=10, placeholder="Default is 10"
+            "Coverage", value=10, placeholder="Default is 10"
         )
     with col2:
         min_completeness = st.number_input(
-            "Insert a number", value=80, placeholder="Default is 80"
+            "Completeness", value=80, placeholder="Default is 80"
         )
 
-    st.write("MAGs with a minimum coverage of", min_coverage, " and a completeness greather than", min_completeness, "% will be considered")
+    st.write("MAGs with a minimum coverage of", min_coverage, "X and a completeness greather than", min_completeness, "% will be considered")
 
     virgo2_metadata = virgo2_inventory[(virgo2_inventory["Coverage"] > min_coverage) & (virgo2_inventory["Complete"] > min_completeness)]
 
